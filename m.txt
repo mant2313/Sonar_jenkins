@@ -40,3 +40,43 @@ def DoSomething():
   password = "123456"
   print("Hi")
   eval("print('Insecure')")
+
+
+
+
+
+pipeline {
+    agent any
+
+    environment {
+        scannerHome = tool 'sonar' // 'sonar' must be configured in Jenkins → Global Tool Configuration
+    }
+
+    stages {
+
+        stage('Prepare Workspace') {
+            steps {
+                echo 'Copying helloworld.py to workspace...'
+                bat 'xcopy /s /e /y "C:\\Users\\Admin\\Desktop\\helloworld.py" .'
+            }
+        }
+
+        stage('Code Analysis') {
+            steps {
+                script {
+                    withSonarQubeEnv('sonar') { // 'sonar' is your server name in Jenkins → SonarQube config
+                        bat """
+                            ${scannerHome}\\bin\\sonar-scanner.bat ^
+                            -Dsonar.projectKey=helloworld-python ^
+                            -Dsonar.projectName="Hello World Python App" ^
+                            -Dsonar.projectVersion=1.0 ^
+                            -Dsonar.sources=.
+                        """
+                    }
+                }
+            }
+        }
+
+    }
+}
+
